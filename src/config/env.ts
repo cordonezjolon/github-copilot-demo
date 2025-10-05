@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
+import { dopplerClient } from './doppler';
 
 dotenv.config();
 
@@ -16,6 +17,35 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
 });
 
+async function loadConfig(): Promise<z.infer<typeof envSchema>> {
+  let envVars = { ...process.env };
+
+  // If Doppler is enabled, fetch secrets and merge with process.env
+  if (dopplerClient.isEnabled()) {
+    try {
+      const dopplerSecrets = await dopplerClient.getSecrets();
+      envVars = { ...envVars, ...dopplerSecrets };
+      console.log('✅ Configuration loaded from Doppler');
+    } catch (error) {
+      console.warn('⚠️ Failed to load from Doppler, falling back to process.env:', error);
+    }
+  }
+
+  const parsedEnv = envSchema.safeParse(envVars);
+
+  if (!parsedEnv.success) {
+    console.error('❌ Invalid environment variables:', parsedEnv.error.format());
+    process.exit(1);
+  }
+
+  return parsedEnv.data;
+}
+
+// Export config as a promise for async initialization
+export const configPromise = loadConfig();
+
+// For backward compatibility, also export a synchronous version
+// This will use process.env directly (without Doppler) for sync access
 const parsedEnv = envSchema.safeParse(process.env);
 
 if (!parsedEnv.success) {
