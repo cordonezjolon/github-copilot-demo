@@ -8,6 +8,7 @@ A production-ready Node.js Express application built with TypeScript, following 
 - ✅ **Express.js** - Fast, unopinionated web framework
 - ✅ **Sequelize ORM** - Database abstraction with TypeScript support
 - ✅ **Zod** - Runtime type validation
+- ✅ **Doppler** - Optional centralized secrets management (with .env fallback)
 - ✅ **Dependency Injection** - Using tsyringe for better testability
 - ✅ **Clean Architecture** - Separation of concerns with layers
 - ✅ **SOLID Principles** - Maintainable and scalable code
@@ -59,9 +60,28 @@ npm install
 ```
 
 3. Set up environment variables
+
+**Option A: Using Traditional .env (Default)**
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
+```
+
+**Option B: Using Doppler (Recommended for Teams)**
+```bash
+# Install Doppler CLI: https://docs.doppler.com/docs/install-cli
+doppler login
+doppler setup
+
+# Run with Doppler
+doppler run -- npm run dev
+```
+
+**Option C: Using Doppler Service Token**
+```bash
+cp .env.doppler.example .env
+# Edit .env with your Doppler service token
+# Set DOPPLER_ENABLED=true and add your token
 ```
 
 4. Run the application
@@ -101,6 +121,118 @@ npm start
 - `npm run db:migrate:undo` - Undo last migration
 - `npm run db:seed` - Seed database with test data
 - `npm run db:reset` - Reset database (drop, create, migrate, seed)
+
+## 🔐 Doppler Secrets Management
+
+This application supports [Doppler](https://www.doppler.com/) for centralized secrets management, providing enhanced security and team collaboration.
+
+### Why Use Doppler?
+
+- 🔒 **Centralized secrets** across all environments
+- 🔄 **Automatic secret rotation** and audit trails
+- 👥 **Team collaboration** with fine-grained access controls
+- 🚫 **No secrets in git** - never accidentally commit sensitive data
+- 🔍 **Compliance ready** with full audit logs
+
+### Getting Started with Doppler
+
+#### 1. Install Doppler CLI
+
+```bash
+# macOS
+brew install dopplerhq/tap/doppler
+
+# Linux
+wget -q -O - https://packages.doppler.com/public/cli/gpg.DE2A7741A397C129.key | sudo apt-key add -
+echo "deb https://packages.doppler.com/public/cli/deb/debian any-version main" | sudo tee /etc/apt/sources.list.d/doppler-cli.list
+sudo apt-get update && sudo apt-get install doppler
+
+# Other platforms: https://docs.doppler.com/docs/install-cli
+```
+
+#### 2. Authenticate
+
+```bash
+doppler login
+```
+
+#### 3. Set Up Your Project
+
+```bash
+# Initialize in your project directory
+cd your-project
+doppler setup
+
+# Select or create project
+# Choose environment (dev, staging, prod)
+```
+
+#### 4. Run Your Application
+
+```bash
+# Development with Doppler
+doppler run -- npm run dev
+
+# Or pass secrets to any command
+doppler run -- npm test
+```
+
+### Alternative: Service Tokens
+
+For CI/CD or environments without interactive CLI:
+
+```bash
+# Get a service token from Doppler dashboard
+# Add to your .env file:
+DOPPLER_ENABLED=true
+DOPPLER_TOKEN=<your-doppler-service-token>
+DOPPLER_PROJECT=<your-project-name>
+DOPPLER_CONFIG=<your-config>
+
+# Run normally
+npm run dev
+```
+
+### Backward Compatibility
+
+Doppler is **optional** and **disabled by default**. The application works perfectly with traditional `.env` files:
+
+```bash
+# Without Doppler (default behavior)
+cp .env.example .env
+npm run dev
+```
+
+### Configuration Priority
+
+The application loads configuration in this order:
+1. **Doppler secrets** (if `DOPPLER_ENABLED=true`)
+2. **Environment variables** (process.env)
+3. **Default values** (from Zod schemas)
+
+### Migrating from .env to Doppler
+
+```bash
+# 1. Create Doppler project
+doppler projects create your-project-name
+
+# 2. Upload your existing secrets
+cat .env | doppler secrets upload
+
+# 3. Verify secrets
+doppler secrets
+
+# 4. Start using Doppler
+doppler run -- npm run dev
+```
+
+### Best Practices
+
+1. **Never commit** `.env` files with real secrets
+2. **Use service tokens** in CI/CD, not personal tokens
+3. **Separate environments** (dev, staging, prod) in Doppler
+4. **Rotate secrets regularly** using Doppler's rotation features
+5. **Review audit logs** periodically for security compliance
 
 ## API Endpoints
 

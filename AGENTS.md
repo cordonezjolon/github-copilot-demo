@@ -10,6 +10,7 @@ This is a Node.js Express application built with TypeScript following Clean Code
 - **Framework**: Express.js
 - **Database**: Sequelize ORM (supports PostgreSQL, MySQL, SQLite)
 - **Validation**: Zod schemas
+- **Secrets Management**: Doppler SDK (optional, with .env fallback)
 - **Testing**: Jest with Supertest for API testing
 - **Code Quality**: ESLint, Prettier, Husky pre-commit hooks
 
@@ -247,6 +248,113 @@ export const config = {
   database: databaseConfig[process.env.NODE_ENV || 'development']
 };
 ```
+
+### Doppler Secrets Management Integration
+
+This application now supports **Doppler** for centralized secrets management as an alternative to traditional `.env` files.
+
+#### Benefits of Using Doppler
+- ✅ Centralized secret management across all environments
+- ✅ Automatic secret rotation and audit trails
+- ✅ Team collaboration with fine-grained access controls
+- ✅ No risk of committing secrets to version control
+- ✅ Better security and compliance
+
+#### Doppler Configuration
+
+The application uses a `DopplerClient` class that provides:
+- Graceful fallback to `process.env` when Doppler is disabled
+- Backward compatibility with existing `.env` files
+- Type-safe secret fetching with Zod validation
+
+```typescript
+// config/doppler.ts
+export class DopplerClient {
+  async getSecret(name: string): Promise<string | undefined>;
+  async getSecrets(): Promise<Record<string, string>>;
+  isEnabled(): boolean;
+}
+
+// config/env.ts - Integrates Doppler with existing config
+async function loadConfig() {
+  let envVars = { ...process.env };
+  
+  // If Doppler is enabled, fetch secrets and merge
+  if (dopplerClient.isEnabled()) {
+    const dopplerSecrets = await dopplerClient.getSecrets();
+    envVars = { ...envVars, ...dopplerSecrets };
+  }
+  
+  return envSchema.parse(envVars);
+}
+```
+
+#### Using Doppler in Development
+
+**Option 1: Enable Doppler (Recommended for Teams)**
+```bash
+# 1. Install Doppler CLI
+# Visit: https://docs.doppler.com/docs/install-cli
+
+# 2. Login to Doppler
+doppler login
+
+# 3. Set up project
+doppler setup
+
+# 4. Run application with Doppler
+doppler run -- npm run dev
+```
+
+**Option 2: Use Service Token**
+```bash
+# In .env or .env.local
+DOPPLER_ENABLED=true
+DOPPLER_TOKEN=<your-doppler-service-token>
+DOPPLER_PROJECT=<your-project>
+DOPPLER_CONFIG=<your-config>
+
+# Run normally
+npm run dev
+```
+
+**Option 3: Traditional .env (Default)**
+```bash
+# Doppler is disabled by default
+# Just use .env file as usual
+npm run dev
+```
+
+#### AI Agent Patterns for Doppler
+
+When working with Doppler in this codebase:
+
+1. **Always maintain backward compatibility** - Code should work with or without Doppler
+2. **Use Zod schemas** - All secrets are validated regardless of source
+3. **Handle errors gracefully** - Fall back to process.env if Doppler fails
+4. **Avoid hardcoding secrets** - Never commit secrets, use Doppler or .env.example
+5. **Test both modes** - Ensure tests pass with Doppler enabled and disabled
+
+```typescript
+// ✅ GOOD: Backward compatible configuration
+const config = await configPromise; // Async config with Doppler
+// OR
+const config = config; // Sync config with process.env fallback
+
+// ❌ BAD: Don't access Doppler directly in business logic
+const secret = await dopplerClient.getSecret('API_KEY');
+
+// ✅ GOOD: Use the config object
+const apiKey = config.API_KEY; // Works with both Doppler and .env
+```
+
+#### Doppler Best Practices
+
+1. **Secret Naming**: Use SCREAMING_SNAKE_CASE (e.g., `DB_PASSWORD`, `JWT_SECRET`)
+2. **Environment Separation**: Use separate Doppler configs for dev, staging, prod
+3. **Service Tokens**: Use service tokens in CI/CD, not personal access tokens
+4. **Local Development**: Use `doppler run` or service tokens, never commit tokens
+5. **Testing**: Tests should work without Doppler by using default values
 
 ## Development Workflow
 
