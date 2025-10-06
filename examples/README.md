@@ -23,9 +23,9 @@ doppler run -- npx ts-node examples/doppler-demo.ts
 ```bash
 # Set environment variables first
 export DOPPLER_ENABLED=true
-export DOPPLER_TOKEN=dp.st.your-service-token
-export DOPPLER_PROJECT=your-project
-export DOPPLER_CONFIG=dev
+export DOPPLER_TOKEN=<your-doppler-service-token>
+export DOPPLER_PROJECT=<your-project>
+export DOPPLER_CONFIG=<your-config>
 
 npx ts-node examples/doppler-demo.ts
 ```

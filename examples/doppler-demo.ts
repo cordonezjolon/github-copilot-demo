@@ -67,7 +67,7 @@ async function demonstrateDopplerIntegration() {
   
   console.log('\n  With Service Token (.env):');
   console.log('  DOPPLER_ENABLED=true');
-  console.log('  DOPPLER_TOKEN=dp.st.your-token');
+  console.log('  DOPPLER_TOKEN=<your-doppler-service-token>');
   console.log('  $ ts-node examples/doppler-demo.ts');
   
   console.log('\n  Without Doppler (default):');

@@ -310,9 +310,9 @@ doppler run -- npm run dev
 ```bash
 # In .env or .env.local
 DOPPLER_ENABLED=true
-DOPPLER_TOKEN=dp.st.your-service-token
-DOPPLER_PROJECT=your-project
-DOPPLER_CONFIG=dev
+DOPPLER_TOKEN=<your-doppler-service-token>
+DOPPLER_PROJECT=<your-project>
+DOPPLER_CONFIG=<your-config>
 
 # Run normally
 npm run dev

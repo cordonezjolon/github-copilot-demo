@@ -185,9 +185,9 @@ For CI/CD or environments without interactive CLI:
 # Get a service token from Doppler dashboard
 # Add to your .env file:
 DOPPLER_ENABLED=true
-DOPPLER_TOKEN=dp.st.your-service-token-here
-DOPPLER_PROJECT=your-project-name
-DOPPLER_CONFIG=dev
+DOPPLER_TOKEN=<your-doppler-service-token>
+DOPPLER_PROJECT=<your-project-name>
+DOPPLER_CONFIG=<your-config>
 
 # Run normally
 npm run dev
